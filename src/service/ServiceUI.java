@@ -4,17 +4,99 @@
  */
 package service;
 
+import remote.OutputHandler;
+
+import javax.swing.table.DefaultTableModel;
+import java.io.DataOutput;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+
 /**
- *
  * @author shadow
  */
 public class ServiceUI extends javax.swing.JFrame {
+    private ServiceRemoteImpl service;
+    private DefaultTableModel topicsTableModel;
+    private DefaultTableModel subscribersTableModel;
+    private DefaultTableModel activeNotiTableModel;
 
     /**
      * Creates new form ServiceUI
      */
     public ServiceUI() {
         initComponents();
+        try {
+            service = new ServiceRemoteImpl(new TableDataOutput());
+            bindRegistry();
+            initTables();
+        } catch (RemoteException e) {
+            System.out.println("Can't start service: " + e.getMessage());
+            System.exit(0);
+        }
+    }
+
+    private class TableDataOutput implements OutputHandler {
+        @Override
+        public void output(String output) {
+            updateTables();
+        }
+    }
+
+    private void initTables() {
+        topicsTableModel = new DefaultTableModel(
+                new Object[][]{},
+                new String[]{"Name", "Subscribers"}
+        );
+        topicsTable.setModel(topicsTableModel);
+        subscribersTableModel = new DefaultTableModel(
+                new Object[][]{},
+                new String[]{"Name", "Topics"}
+        );
+        subscribersTable.setModel(topicsTableModel);
+        activeNotiTableModel = new DefaultTableModel(
+                new Object[][]{},
+                new String[]{"Topic", "Content", "Delivered Count", "Receivers"}
+        );
+        activeNotiTable.setModel(activeNotiTableModel);
+    }
+
+    private void updateTables() {
+        updateTopicsTable();
+        updateSubscribersTable();
+        updateActiveNotiTable();
+    }
+
+
+    private void updateTopicsTable() {
+        topicsTableModel.setRowCount(0);
+        for (var topicEntry : service.notifications.entrySet()) {
+            topicsTableModel.addRow(new Object[]{topicEntry.getKey(), String.join(", ", topicEntry.getValue().subscribers)});
+        }
+    }
+
+    private void updateSubscribersTable() {
+        subscribersTableModel.setRowCount(0);
+        for (var subscriberEntry : service.subscribers.entrySet()) {
+            subscribersTableModel.addRow(new Object[]{subscriberEntry.getKey(), String.join(", ", subscriberEntry.getValue().notifications)});
+        }
+    }
+
+    private void updateActiveNotiTable() {
+        activeNotiTableModel.setRowCount(0);
+        for (var notiEntry : service.notificationQueues.entrySet()) {
+            var topic = notiEntry.getKey();
+            var content = notiEntry.getValue();
+            for (var msg : content) {
+                activeNotiTableModel.addRow(new Object[]{topic, msg.content(), msg.receivedSubscribers().size(), String.join(", ", msg.receivedSubscribers())});
+            }
+        }
+    }
+
+    private void bindRegistry() throws RemoteException {
+        Registry registry = LocateRegistry.createRegistry(Service.PORT);
+        registry.rebind("service", service);
+        System.out.println("Service is ready & registered on port: " + Service.PORT);
     }
 
     /**
@@ -25,19 +107,110 @@ public class ServiceUI extends javax.swing.JFrame {
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
+
+        tabbedPane = new javax.swing.JTabbedPane();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        topicsTable = new javax.swing.JTable();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        subscribersTable = new javax.swing.JTable();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        activeNotiTable = new javax.swing.JTable();
+        jLabel2 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        getContentPane().setLayout(new java.awt.GridBagLayout());
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
-        );
+        tabbedPane.setTabPlacement(javax.swing.JTabbedPane.LEFT);
+
+        topicsTable.setModel(new javax.swing.table.DefaultTableModel(
+                new Object[][]{
+                        {null, null},
+                        {null, null},
+                        {null, null},
+                        {null, null}
+                },
+                new String[]{
+                        "Name", "Subscriber Count"
+                }
+        ) {
+            boolean[] canEdit = new boolean[]{
+                    false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit[columnIndex];
+            }
+        });
+        jScrollPane1.setViewportView(topicsTable);
+
+        tabbedPane.addTab("Notification Topics", jScrollPane1);
+
+        subscribersTable.setModel(new javax.swing.table.DefaultTableModel(
+                new Object[][]{
+                        {null, null},
+                        {null, null},
+                        {null, null},
+                        {null, null}
+                },
+                new String[]{
+                        "Name", "Subscribed Topics"
+                }
+        ) {
+            boolean[] canEdit = new boolean[]{
+                    false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit[columnIndex];
+            }
+        });
+        jScrollPane2.setViewportView(subscribersTable);
+
+        tabbedPane.addTab("Subscribers", jScrollPane2);
+
+        activeNotiTable.setModel(new javax.swing.table.DefaultTableModel(
+                new Object[][]{
+                        {null, null, null, null},
+                        {null, null, null, null},
+                        {null, null, null, null},
+                        {null, null, null, null}
+                },
+                new String[]{
+                        "Topic", "Content", "Delivered Count", "Recievers"
+                }
+        ) {
+            boolean[] canEdit = new boolean[]{
+                    false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit[columnIndex];
+            }
+        });
+        jScrollPane3.setViewportView(activeNotiTable);
+
+        tabbedPane.addTab("Active Notifications", jScrollPane3);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.ipadx = -83;
+        gridBagConstraints.ipady = 70;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 0.2;
+        gridBagConstraints.weighty = 0.2;
+        gridBagConstraints.insets = new java.awt.Insets(8, 15, 15, 15);
+        getContentPane().add(tabbedPane, gridBagConstraints);
+
+        jLabel2.setFont(new java.awt.Font("Helvetica Neue", 1, 24)); // NOI18N
+        jLabel2.setText("BUE Notification Service");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.insets = new java.awt.Insets(15, 15, 8, 15);
+        getContentPane().add(jLabel2, gridBagConstraints);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -49,7 +222,7 @@ public class ServiceUI extends javax.swing.JFrame {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
          */
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
@@ -78,5 +251,13 @@ public class ServiceUI extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTable activeNotiTable;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JTable subscribersTable;
+    private javax.swing.JTabbedPane tabbedPane;
+    private javax.swing.JTable topicsTable;
     // End of variables declaration//GEN-END:variables
 }

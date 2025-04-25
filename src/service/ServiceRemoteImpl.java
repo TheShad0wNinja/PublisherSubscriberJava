@@ -1,6 +1,7 @@
 package service;
 
 import remote.NotificationRemote;
+import remote.OutputHandler;
 import remote.ServiceRemote;
 import remote.SubscriberRemote;
 
@@ -13,13 +14,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class ServiceRemoteImpl extends UnicastRemoteObject implements ServiceRemote {
-    private static final long TTL = 20000;
-    private final ConcurrentMap<String, NotificationEntry> notifications;
-    private final ConcurrentMap<String, Queue<NotificationMessage>> notificationQueues;
-    private final ConcurrentMap<String, SubscriberEntry> subscribers;
+    protected static final long TTL = 20000;
+    protected final ConcurrentMap<String, NotificationEntry> notifications;
+    protected final ConcurrentMap<String, Queue<NotificationMessage>> notificationQueues;
+    protected final ConcurrentMap<String, SubscriberEntry> subscribers;
+    private final OutputHandler outputHandler;
 
-    private record NotificationMessage(String content, Set<String> receivedSubscribers, LocalDateTime timestamp) {}
-    private static class NotificationEntry {
+    protected record NotificationMessage(String content, Set<String> receivedSubscribers, LocalDateTime timestamp) {}
+    protected static class NotificationEntry {
         public NotificationRemote notificationRemote;
         public HashSet<String> subscribers;
 
@@ -28,7 +30,7 @@ public class ServiceRemoteImpl extends UnicastRemoteObject implements ServiceRem
             this.subscribers = subscribers;
         }
     }
-    private static class SubscriberEntry {
+    protected static class SubscriberEntry {
         public SubscriberRemote subscriberRemote;
         public HashSet<String> notifications;
 
@@ -38,7 +40,8 @@ public class ServiceRemoteImpl extends UnicastRemoteObject implements ServiceRem
         }
     }
 
-    protected ServiceRemoteImpl() throws RemoteException {
+    protected ServiceRemoteImpl(OutputHandler outputHandler) throws RemoteException {
+        this.outputHandler = outputHandler;
         notifications = new ConcurrentHashMap<>();
         subscribers = new ConcurrentHashMap<>();
         notificationQueues = new ConcurrentHashMap<>();
@@ -55,6 +58,7 @@ public class ServiceRemoteImpl extends UnicastRemoteObject implements ServiceRem
         System.out.println("Registering notification: " + name);
         notifications.put(name, new NotificationEntry(notificationRemote, new HashSet<>()));
         notificationQueues.put(name, new LinkedList<>());
+        outputHandler.output("");
     }
 
     @Override
@@ -65,6 +69,7 @@ public class ServiceRemoteImpl extends UnicastRemoteObject implements ServiceRem
         }
         notifications.remove(name);
         notificationQueues.remove(name);
+        outputHandler.output("");
     }
 
     @Override
@@ -82,6 +87,7 @@ public class ServiceRemoteImpl extends UnicastRemoteObject implements ServiceRem
         }
         notificationQueues.get(topic).offer(newMessage);
         cleanupNotificationQueues();
+        outputHandler.output("");
     }
 
     private void cleanupNotificationQueues() {
@@ -111,6 +117,7 @@ public class ServiceRemoteImpl extends UnicastRemoteObject implements ServiceRem
         System.out.println("Registering subscriber: " + subscriber);
         SubscriberEntry newSubscriberEntry = new SubscriberEntry(subscriberRemote, new HashSet<>());
         subscribers.put(subscriber, newSubscriberEntry);
+        outputHandler.output("");
     }
 
     @Override
@@ -120,6 +127,7 @@ public class ServiceRemoteImpl extends UnicastRemoteObject implements ServiceRem
             notifications.get(notification).subscribers.remove(subscriber);
         }
         subscribers.remove(subscriber);
+        outputHandler.output("");
     }
 
     @Override
@@ -132,6 +140,7 @@ public class ServiceRemoteImpl extends UnicastRemoteObject implements ServiceRem
         notification.subscribers.add(subscriber);
         notification.notificationRemote.updateSubscriberCount(notification.subscribers.size());
         subscribers.get(subscriber).notifications.add(topic);
+        outputHandler.output("");
     }
 
     @Override
@@ -144,6 +153,7 @@ public class ServiceRemoteImpl extends UnicastRemoteObject implements ServiceRem
         notification.subscribers.remove(subscriber);
         notification.notificationRemote.updateSubscriberCount(notification.subscribers.size());
         subscribers.get(subscriber).notifications.remove(topic);
+        outputHandler.output("");
     }
 
     @Override
@@ -158,6 +168,7 @@ public class ServiceRemoteImpl extends UnicastRemoteObject implements ServiceRem
             }
         }
         System.out.println("Resending missed notifications for  " + user);
+        outputHandler.output("");
     }
 
     @Override
