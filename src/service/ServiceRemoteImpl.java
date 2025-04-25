@@ -59,17 +59,30 @@ public class ServiceRemoteImpl extends UnicastRemoteObject implements ServiceRem
         notifications.put(name, new NotificationEntry(notificationRemote, new HashSet<>()));
         notificationQueues.put(name, new LinkedList<>());
         outputHandler.output("");
+        for (var subscriber : subscribers.values()) {
+            try {
+                subscriber.subscriberRemote.updateNotificationOptions();
+            } catch (RemoteException e) {
+                System.out.println("Subscriber " + subscriber + " failed to update notification options");
+            }
+        }
     }
 
     @Override
     public void unregisterTopic(String name) throws RemoteException {
         System.out.println("Unregistering notification: " + name);
-        for(SubscriberEntry subscriber : subscribers.values()) {
-            subscriber.notifications.remove(name);
-        }
         notifications.remove(name);
         notificationQueues.remove(name);
         outputHandler.output("");
+
+        for(SubscriberEntry subscriber : subscribers.values()) {
+            try {
+                subscriber.subscriberRemote.updateNotificationOptions();
+            } catch (RemoteException e) {
+                System.out.println("Subscriber " + subscriber + " failed to update notification options");
+            }
+            subscriber.notifications.remove(name);
+        }
     }
 
     @Override

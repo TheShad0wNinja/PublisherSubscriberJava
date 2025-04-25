@@ -4,6 +4,7 @@
  */
 package subscriber;
 
+import remote.OutputHandler;
 import remote.ServiceRemote;
 import remote.SubscriberRemote;
 import remote.outputdata.TextAreaOutput;
@@ -34,15 +35,29 @@ public class SubscriberUI extends javax.swing.JFrame {
         try {
             Registry registry = LocateRegistry.getRegistry("localhost", Service.PORT);
             service = (ServiceRemote) registry.lookup("service");
-            subscriberRemote = new SubscriberRemoteImpl(new TextAreaOutput(notificationArea));
+            subscriberRemote = new SubscriberRemoteImpl(new TextAreaOutput(notificationArea), new UpdateNotificationOptionsHandler());
 
             registerUser();
             retrieveSubscriptions();
-            setupNotificationOptionsList();
+            updateNotificationOptionsList();
+            jLabel3.setText("Welcome " + name);
             service.resendMissedNotifications(name);
         } catch (RemoteException | NotBoundException e) {
             System.out.println("Error: " + e.getMessage());
             System.exit(0);
+        }
+    }
+
+    private class UpdateNotificationOptionsHandler implements OutputHandler {
+
+        @Override
+        public void output(String output) {
+            try {
+                retrieveSubscriptions();
+                updateNotificationOptionsList();
+            } catch (RemoteException e) {
+                System.out.println("Unable to update: " + e.getMessage());
+            }
         }
     }
 
@@ -71,7 +86,7 @@ public class SubscriberUI extends javax.swing.JFrame {
         }
     }
 
-    private void setupNotificationOptionsList() throws RemoteException {
+    private void updateNotificationOptionsList() throws RemoteException {
         notificationOptionList.removeAll();
         for (var entry : notificationOptions.entrySet()) {
             System.out.println(entry.getKey() + ": " + entry.getValue());
@@ -121,14 +136,16 @@ public class SubscriberUI extends javax.swing.JFrame {
         jScrollPane2 = new javax.swing.JScrollPane();
         notificationArea = new javax.swing.JTextArea();
         jLabel2 = new javax.swing.JLabel();
-        refreshBtn = new javax.swing.JButton();
+        jLabel3 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         getContentPane().setLayout(new java.awt.GridBagLayout());
 
         jLabel1.setFont(new java.awt.Font("Helvetica Neue", 1, 18)); // NOI18N
-        jLabel1.setText("List of Available Notifications");
+        jLabel1.setText("List of Notifications");
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.weightx = 0.2;
         gridBagConstraints.insets = new java.awt.Insets(9, 15, 9, 10);
         getContentPane().add(jLabel1, gridBagConstraints);
@@ -138,11 +155,11 @@ public class SubscriberUI extends javax.swing.JFrame {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 0.2;
         gridBagConstraints.weighty = 0.4;
-        gridBagConstraints.insets = new java.awt.Insets(6, 15, 0, 5);
+        gridBagConstraints.insets = new java.awt.Insets(6, 15, 15, 5);
         getContentPane().add(jScrollPane1, gridBagConstraints);
 
         notificationArea.setColumns(20);
@@ -151,44 +168,32 @@ public class SubscriberUI extends javax.swing.JFrame {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 0.9;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 5, 15, 15);
         getContentPane().add(jScrollPane2, gridBagConstraints);
 
-        jLabel2.setFont(new java.awt.Font("Helvetica Neue", 1, 24)); // NOI18N
+        jLabel2.setFont(new java.awt.Font("Helvetica Neue", 1, 18)); // NOI18N
         jLabel2.setText("New Notifications");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 10);
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 15);
         getContentPane().add(jLabel2, gridBagConstraints);
 
-        refreshBtn.setText("Refresh List");
-        refreshBtn.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                refreshBtnActionPerformed(evt);
-            }
-        });
+        jLabel3.setFont(new java.awt.Font("Helvetica Neue", 1, 24)); // NOI18N
+        jLabel3.setText("Welcome Name");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(6, 15, 15, 5);
-        getContentPane().add(refreshBtn, gridBagConstraints);
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.insets = new java.awt.Insets(15, 15, 0, 15);
+        getContentPane().add(jLabel3, gridBagConstraints);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
-    private void refreshBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshBtnActionPerformed
-        try {
-            retrieveSubscriptions();
-            setupNotificationOptionsList();
-        } catch (RemoteException e) {
-            JOptionPane.showMessageDialog(this, "Unable to reload list: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }//GEN-LAST:event_refreshBtnActionPerformed
 
     /**
      * @param args the command line arguments
@@ -228,10 +233,10 @@ public class SubscriberUI extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTextArea notificationArea;
     private javax.swing.JPanel notificationOptionList;
-    private javax.swing.JButton refreshBtn;
     // End of variables declaration//GEN-END:variables
 }

@@ -53,7 +53,7 @@ public class ServiceUI extends javax.swing.JFrame {
                 new Object[][]{},
                 new String[]{"Name", "Topics"}
         );
-        subscribersTable.setModel(topicsTableModel);
+        subscribersTable.setModel(subscribersTableModel);
         activeNotiTableModel = new DefaultTableModel(
                 new Object[][]{},
                 new String[]{"Topic", "Content", "Delivered Count", "Receivers"}
