@@ -96,6 +96,7 @@ public class SubscriberUI extends javax.swing.JFrame {
                 if (e.getStateChange() == ItemEvent.SELECTED) {
                     try {
                         service.subscribe(name, entry.getKey());
+                        service.resendMissedNotifications(name);
                     } catch (RemoteException ex) {
                         JOptionPane.showMessageDialog(this, "Unable to subscribe to " + entry.getKey() + ": " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                         ((JCheckBox) e.getSource()).setSelected(false);
@@ -103,6 +104,7 @@ public class SubscriberUI extends javax.swing.JFrame {
                 } else {
                     try {
                         service.unsubscribe(name, entry.getKey());
+                        service.resendMissedNotifications(name);
                     } catch (RemoteException ex) {
                         JOptionPane.showMessageDialog(this, "Unable to unsubscribe to " + entry.getKey() + ": " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                         ((JCheckBox) e.getSource()).setSelected(true);

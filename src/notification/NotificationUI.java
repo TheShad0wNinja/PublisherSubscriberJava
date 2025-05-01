@@ -46,6 +46,7 @@ public class NotificationUI extends javax.swing.JFrame {
         notificationNameLabel.setVisible(true);
         messageInput.setVisible(true);
         registerBtn.setText("Unregister");
+        disconnectBtn.setVisible(true);
         notificationNameLabel.setText("Notification Name: " + name);
     }
 
@@ -55,7 +56,8 @@ public class NotificationUI extends javax.swing.JFrame {
         staticLabel.setVisible(false);
         notificationNameLabel.setVisible(false);
         messageInput.setVisible(false);
-        registerBtn.setText("Register");
+        disconnectBtn.setVisible(false);
+        registerBtn.setText("Register/Connect");
     }
 
     /**
@@ -70,6 +72,7 @@ public class NotificationUI extends javax.swing.JFrame {
 
         jLabel1 = new javax.swing.JLabel();
         registerBtn = new javax.swing.JButton();
+        disconnectBtn = new javax.swing.JButton();
         messageInput = new javax.swing.JTextField();
         staticLabel = new javax.swing.JLabel();
         sendBtn = new javax.swing.JButton();
@@ -84,9 +87,9 @@ public class NotificationUI extends javax.swing.JFrame {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.weightx = 0.2;
-        gridBagConstraints.insets = new java.awt.Insets(9, 15, 9, 10);
+        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.weightx = 0.1;
+        gridBagConstraints.insets = new java.awt.Insets(13, 15, 13, 10);
         getContentPane().add(jLabel1, gridBagConstraints);
 
         registerBtn.setText("Register");
@@ -96,24 +99,43 @@ public class NotificationUI extends javax.swing.JFrame {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 0.1;
+        gridBagConstraints.insets = new java.awt.Insets(5, 10, 5, 15);
         getContentPane().add(registerBtn, gridBagConstraints);
+
+        disconnectBtn.setText("Disconnect");
+        disconnectBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                disconnectBtnActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 0.1;
+        gridBagConstraints.insets = new java.awt.Insets(5, 10, 5, 15);
+        getContentPane().add(disconnectBtn, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 0.2;
-        gridBagConstraints.insets = new java.awt.Insets(0, 15, 0, 0);
+        gridBagConstraints.weightx = 0.4;
+        gridBagConstraints.insets = new java.awt.Insets(0, 15, 15, 10);
         getContentPane().add(messageInput, gridBagConstraints);
 
         staticLabel.setText("Send Message");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(11, 15, 11, 15);
+        gridBagConstraints.weightx = 0.1;
+        gridBagConstraints.insets = new java.awt.Insets(10, 15, 4, 10);
         getContentPane().add(staticLabel, gridBagConstraints);
 
         sendBtn.setText("Send");
@@ -123,37 +145,38 @@ public class NotificationUI extends javax.swing.JFrame {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 0.1;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 15);
+        gridBagConstraints.insets = new java.awt.Insets(0, 10, 15, 15);
         getContentPane().add(sendBtn, gridBagConstraints);
 
         subCountLabel.setText("Subscriber Count: 0");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(15, 15, 5, 15);
+        gridBagConstraints.weightx = 0.1;
+        gridBagConstraints.insets = new java.awt.Insets(5, 15, 5, 10);
         getContentPane().add(subCountLabel, gridBagConstraints);
 
         notificationNameLabel.setText("Notification Name");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(0, 15, 0, 15);
+        gridBagConstraints.weightx = 0.1;
+        gridBagConstraints.insets = new java.awt.Insets(5, 15, 5, 10);
         getContentPane().add(notificationNameLabel, gridBagConstraints);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void registerBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_registerBtnActionPerformed
-        System.out.println("HERE");
-        if (registerBtn.getText().equals("Register")) {
+        if (registerBtn.getText().equals("Register/Connect")) {
             do {
                 name = JOptionPane.showInputDialog("Enter the name of the notification you want to register");
             } while (name != null && name.isBlank());
@@ -186,10 +209,15 @@ public class NotificationUI extends javax.swing.JFrame {
         }
         try {
             serviceRemote.publish(name, messageInput.getText());
+            messageInput.setText("");
         } catch (RemoteException e) {
             JOptionPane.showMessageDialog(this, "Unable to publish message: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_sendBtnActionPerformed
+
+    private void disconnectBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_disconnectBtnActionPerformed
+        hideComponents();
+    }//GEN-LAST:event_disconnectBtnActionPerformed
 
     /**
      * @param args the command line arguments
@@ -228,6 +256,7 @@ public class NotificationUI extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton disconnectBtn;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JTextField messageInput;
     private javax.swing.JLabel notificationNameLabel;
